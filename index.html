@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crisis Clean: Chemistry Challenge</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom, #c4f1f9, #ffffff);
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #136a7e;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    p, h3 {
+      color: #333;
+    }
+    .sample-btn, .chem-btn {
+      margin: 10px;
+      padding: 12px 24px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(to right, #00bcd4, #0097a7);
+      color: white;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .sample-btn:hover, .chem-btn:hover {
+      background: linear-gradient(to right, #0097a7, #006064);
+      transform: translateY(-2px);
+    }
+    .result-box {
+      margin-top: 20px;
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      white-space: pre-line; /* <-- preserve new lines */
+    }
+    #score {
+      font-weight: bold;
+      color: #00796b;
+      font-size: 20px;
+    }
+    #chem-options, #result, #sample-info {
+      display: none;
+    }
+    #sample-name {
+      font-size: 20px;
+      margin-bottom: 15px;
+      color: #444;
+    }
+    #sample-section p {
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Crisis Clean: Chemistry Challenge</h1>
+  <p><strong>You're part of a disaster relief team.</strong> Purify each water sample using your chemistry knowledge!</p>
+
+  <div id="sample-section">
+    <p>Select a contaminated water sample:</p>
+    <button class="sample-btn" onclick="selectSample(1)">Sample 1</button>
+    <button class="sample-btn" onclick="selectSample(2)">Sample 2</button>
+    <button class="sample-btn" onclick="selectSample(3)">Sample 3</button>
+  </div>
+
+  <div id="sample-info">
+    <p id="sample-name"></p>
+  </div>
+
+  <div id="chem-options">
+    <h3>Choose a chemical to add:</h3>
+    <button class="chem-btn" onclick="addChemical('Na2CO3')">Na₂CO₃ (Sodium Carbonate)</button>
+    <button class="chem-btn" onclick="addChemical('NaOH')">NaOH (Sodium Hydroxide)</button>
+    <button class="chem-btn" onclick="addChemical('NaHCO3')">NaHCO₃ (Sodium Bicarbonate)</button>
+  </div>
+
+  <div id="result" class="result-box"></div>
+  <p id="score">Score: 0</p>
+
+  <script>
+    let currentSample = null;
+    let score = 0;
+    const sampleData = {
+      1: { contaminants: ['Pb', 'acid'], description: 'Contaminated with lead ions and high acidity.' },
+      2: { contaminants: ['Fe'], description: 'Contaminated with iron(III) ions.' },
+      3: { contaminants: ['Pb', 'Fe', 'acid'], description: 'Highly toxic: Contains lead, iron(III), and is strongly acidic.' }
+    };
+    let currentContaminants = [];
+
+    // Map contaminants to lesson names for feedback
+    const contaminantLessons = {
+      'Pb': 'Chemical Reactions and Solutions and Solubility',
+      'Fe': 'Chemical Reactions and Solutions and Solubility',
+      'acid': 'Chemical Reactions and Solutions and Solubility'
+    };
+
+    function selectSample(num) {
+      currentSample = num;
+      currentContaminants = [...sampleData[num].contaminants];
+      document.getElementById('sample-name').innerText = `🧪 Sample ${num}: ${sampleData[num].description}`;
+      document.getElementById('sample-info').style.display = 'block';
+      document.getElementById('chem-options').style.display = 'block';
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('result').innerText = '';
+    }
+
+    function addChemical(chem) {
+      let message = "";
+      let cleaned = false;
+
+      if (currentContaminants.length === 0) {
+        message = "✅ Already purified! Choose another sample.";
+      } else {
+        if (chem === 'Na2CO3' && currentContaminants.includes('Pb')) {
+          currentContaminants = currentContaminants.filter(c => c !== 'Pb');
+          message = "✅ Lead removed as PbCO₃ precipitate!";
+          cleaned = true;
+        } else if (chem === 'NaOH' && currentContaminants.includes('Fe')) {
+          currentContaminants = currentContaminants.filter(c => c !== 'Fe');
+          message = "✅ Iron removed as Fe(OH)₃ precipitate!";
+          cleaned = true;
+        } else if (chem === 'NaHCO3' && currentContaminants.includes('acid')) {
+          currentContaminants = currentContaminants.filter(c => c !== 'acid');
+          message = "✅ Acidity neutralized by NaHCO₃!";
+          cleaned = true;
+        } else {
+          // <-- New feedback for wrong chemical
+          // Find which contaminants remain, then tell player which lessons to review
+          const lessonsToReview = [...new Set(currentContaminants.map(c => contaminantLessons[c]))].join(', ');
+          message = `❌ No reaction. Try reviewing the lesson(s): ${lessonsToReview} and try again.`;
+        }
+      }
+
+      if (cleaned) {
+        if (currentContaminants.length === 0) {
+          message += "\n🎉 Water fully purified! +1 Point.";
+          score++;
+          document.getElementById('score').innerText = `Score: ${score}`;
+        } else {
+          message += `\n🧪 Remaining issues: ${currentContaminants.join(', ')}`;
+        }
+      }
+
+      document.getElementById('result').innerText = message;
+      document.getElementById('result').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
